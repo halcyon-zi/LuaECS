@@ -1,0 +1,121 @@
+﻿---------------------------------
+--- 上下文环境
+
+local Entity = require "Entity"
+
+---@class Context
+local Context = {}
+
+function Context:New()
+    local context = {
+        entities = {},
+        compTypes = {},
+        _eid = 0,
+    }
+    setmetatable(context, {__index = Context})
+    return context
+end
+
+--- 创建实体
+---@return Entity
+function Context:CreateEntity()
+    local entity = Entity:New()
+    entity.eid = self._eid
+    self.entities[self._eid] = entity
+    self._eid = self._eid + 1
+    return entity
+end
+
+--- 获取实体
+---@return Entity
+function Context:GetEntity(eid)
+    return self.entities[eid]
+end
+
+--- 删除实体
+function Context:RemoveEntity(eid)
+    if self.entities[eid] == nil then
+        return
+    end
+    ReleaseEntity(eid)
+    self.entities[eid] = nil
+end
+
+--- 释放实体身上所有组件
+function Context:ReleaseEntity(eid)
+    for compType, _ in pairs(self.entities[eid]) do
+        self:RemoveComponent(compType)
+    end
+end
+
+--- 注册组件类型
+---@param component Component
+---@param compType string
+function Context:RegisterComponent(component, compType)
+    if self:ExistsComponent(compType) then
+        print(string.format("注册组件失败 => ComponentType[%s]已存在", compType))
+        return
+    end
+    self.compTypes[compType] = component
+end
+
+--- 判断组件是否存在
+function Context:ExistsComponent(compType)
+    return self.compTypes[compType] ~= nil
+end
+
+--- 获取组件
+---@return Component
+function Context:GetComponent(compType)
+    return self.compTypes[compType]
+end
+
+--- 实体添加组件
+function Context:AddComponent(eid, compType, ...)
+    local entity = self:GetEntity(eid)
+    local component = self:GetComponent(compType)
+    if entity == nil or component == nil then
+        return
+    end
+    entity[compType] = component:New(...)
+    self:OnComponentAdded(eid, compType)
+end
+
+--- 实体修改组件
+function Context:ReplaceComponent(eid, compType, comp)
+    local entity = self:GetEntity(eid)
+    if entity == nil or comp == nil then
+        return
+    end
+    entity[compType] = comp
+    self:OnComponentReplaced(eid, compType)
+end
+
+--- 实体删除组件
+function Context:RemoveComponent(eid, compType)
+    local entity = self:GetEntity(eid)
+    local component = self:GetComponent(compType)
+    if entity == nil or component == nil then
+        return
+    end
+    entity[compType] = nil
+    self:OnComponentRemoved(eid, compType)
+end
+
+-- TODO:暂时全部都是触发收集
+--- 添加组件响应
+function Context:OnComponentAdded(eid, compType)
+    Systems:Collect(eid, compType)
+end
+
+--- 修改组件响应
+function Context:OnComponentReplaced(eid, compType)
+    Systems:Collect(eid, compType)
+end
+
+--- 移除组件响应
+function Context:OnComponentRemoved(eid, compType)
+    Systems:Collect(eid, compType)
+end
+
+return Context

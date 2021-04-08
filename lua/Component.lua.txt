@@ -1,0 +1,11 @@
+﻿---------------------------------
+--- 所有Component基类
+
+---@class Component
+local Component = {}
+
+function Component:New(...)
+    
+end
+
+return Component

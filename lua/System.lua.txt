@@ -1,0 +1,41 @@
+﻿---------------------------------
+--- 所有System基类
+
+---@class System
+local System = {}
+
+function System:New(sysName)
+    local system = {name = sysName,}
+    setmetatable(system, {__index = System})
+    return system
+end
+
+---@param context Context
+---@param collector Collector
+function System:StepExecute(context, collector)
+    local targets = {}
+    local length = 0
+    for i = 1, collector.length do
+        local entity = context:GetEntity(collector.collections[i])
+        if self:Filter(entity) then
+            length = length + 1
+            targets[length] = entity
+        end
+    end
+    collector:ClearCollect()
+    self:Execute(context, targets)
+end
+
+function System:Execute(context, targets)
+    
+end
+
+function System:Match(compType)
+    return true
+end
+
+function System:Filter(entity)
+    return true
+end
+
+return System

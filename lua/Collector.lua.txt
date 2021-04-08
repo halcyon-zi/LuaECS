@@ -1,0 +1,28 @@
+﻿---------------------------------
+--- Collector
+
+---@class Collector
+local Collector = {}
+
+Collector.collections = {}
+Collector.length = 0
+
+
+function Collector:New()
+    local collector = {}
+    setmetatable(collector, {__index = Collector})
+    return collector
+end
+
+function Collector:AddCollect(eid)
+    self.length = self.length + 1
+    self.collections[self.length] = eid
+    
+end
+
+function Collector:ClearCollect()
+    self.length = 0
+    self.collections = {}
+end
+
+return Collector

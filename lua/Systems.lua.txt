@@ -1,0 +1,39 @@
+﻿---------------------------------
+--- 管理所有System
+
+local Collector = require "Collector"
+
+---@class Systems
+local Systems = {
+    ---@type System[]
+    _systems = {},
+    ---@type Collector[]
+    _collectors = {},
+}
+
+function Systems:AddSystem(systemType, systemName)
+    local system = systemType:New(systemName)
+    self._systems[systemName] = system
+    self._collectors[systemName] = Collector:New()
+end
+
+function Systems:RemoveSystem(systemName)
+    self._systems[systemName] = nil
+    self._collectors[systemName]= nil
+end
+
+function Systems:Execute(context)
+    for sysName, system in pairs(self._systems) do
+        system:StepExecute(context, self._collectors[sysName])
+    end
+end
+
+function Systems:Collect(eid, compType)
+    for sysName, system in pairs(self._systems) do
+        if system:Match(compType) then
+            self._collectors[sysName]:AddCollect(eid)
+        end
+    end
+end
+
+return Systems

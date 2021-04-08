@@ -1,0 +1,14 @@
+﻿---------------------------------
+--- Entity
+
+---@class Entity
+local Entity = {}
+
+function Entity:New()
+    local entity = {}
+    entity.eid = 0
+    setmetatable(entity, {__index = Entity})
+    return entity
+end
+
+return Entity
